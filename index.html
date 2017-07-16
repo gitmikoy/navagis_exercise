@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+    <title>Navagis Exercise</title>
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous">
+
+    </script>
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Navagis Exercise</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div id="map"></div>
+
+            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCngekIVfxDi6IurFQOuYD7PExgNB8ERJ4&callback=initMap"
+                async defer></script>
+        </div>
+    </div>
+</body>
+<script>
+    var map;
+
+    var updateTimeout;
+
+    function initMap() {
+        var cebu = {lat: 10.3157,lng: 123.8854};
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: cebu,
+            zoom: 12
+        });
+
+        var sheet = 'https://sheets.googleapis.com/v4/spreadsheets/1Y-e4wCRMRdLO37W6GbIbM4ulzgzhsYrdKvM6gEHxaQ8/values/Sheet1!A2:Q?key=AIzaSyCngekIVfxDi6IurFQOuYD7PExgNB8ERJ4';
+        //var icon  = 'images/res.png';
+        var icon = {
+            url: 'images/res2.png',
+            scaledSize: new google.maps.Size(30, 32),
+            origin: new google.maps.Point(0,0),
+            anchor: new google.maps.Point(0, 0)
+        };
+
+        $.getJSON(sheet, function(data) {
+            $(data.values).each(function(){
+                var title = this[0];
+                var address = this[1];
+                var specialties = this[2];
+
+                var position = {
+                    lat: parseFloat(parseFloat(this[3])),
+                    lng: parseFloat(parseFloat(this[4]))
+                };
+
+                var marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: title,
+                    icon: icon,
+                    category: specialties
+                });
+
+                marker.addListener('click', function () {
+                    var contentString = '<div>' +
+                                            '<div class="modal-heading">' +
+                                                '<h5>Restaurant Information</h5>' +
+                                            '</div>' +
+                                            '<div class="modal-body">' +
+                                                '<table class="table">' +
+                                                    '<tbody>' +
+                                                        '<tr>' +
+                                                            '<td>Name: </td>' +
+                                                            '<td>' + title + '</td>' +
+                                                        '</tr>' +
+                                                        '<tr>' +
+                                                            '<td>Address: </td>' +
+                                                            '<td>' + address + '</td>' +
+                                                        '</tr>' +
+                                                        '<tr>' +
+                                                            '<td>Specialties: </td>' +
+                                                            '<td>' + specialties + '</td>' +
+                                                        '</tr>' +
+                                                    '</tbody>' +
+                                                '</table>' +
+                                            '</div>' +
+                                        '</div>';
+
+                    var infowindow = new google.maps.InfoWindow({
+                        content: contentString
+                    });
+
+                    infowindow.open(map, marker);
+                })
+            });
+        });
+    }
+
+</script>
+
